@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:17
+    container_name: bakery_db
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - bakery-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.app
+    container_name: bakery_backend
+    depends_on:
+      - db
+      - rabbitmq
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    networks:
+      - bakery-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 60s  # Increased start period to allow backend time to start
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    container_name: bakery_worker
+    depends_on:
+      - db
+      - rabbitmq
+    env_file:
+      - .env
+    networks:
+      - bakery-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 60s  # Increased start period to ensure the worker can check backend health
+
+  frontend:
+    image: python:3.10-slim
+    container_name: bakery_frontend
+    volumes:
+      - ./frontend:/usr/src/app
+    working_dir: /usr/src/app
+    command: python3 -m http.server 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+    networks:
+      - bakery-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 30s
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: bakery_rabbitmq
+    env_file:
+      - .env
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - bakery-net
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 30s
+
+volumes:
+  pgdata:
+
+networks:
+  bakery-net:
+

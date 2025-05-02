@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bakery Shop</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fef9f4;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 30px;
+      background-color: #fff9f1;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      margin-top: 40px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #d2691e;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      color: #8b4513;
+      margin-top: 30px;
+    }
+
+    input {
+      padding: 8px;
+      border: 1px solid #d2b48c;
+      border-radius: 5px;
+      width: 200px;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 8px 16px;
+      background-color: #ff944d;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #ff7733;
+    }
+
+    label {
+      font-size: 14px;
+      color: #555;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    li {
+      background-color: #fff;
+      border: 1px solid #eee;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 6px;
+    }
+
+    p {
+      font-size: 14px;
+    }
+
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 5px;
+      padding: 12px;
+      position: fixed;
+      z-index: 1;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 16px;
+    }
+
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+
+    @keyframes fadein {
+      from { bottom: 0; opacity: 0; }
+      to { bottom: 30px; opacity: 1; }
+    }
+
+    @keyframes fadeout {
+      from { bottom: 30px; opacity: 1; }
+      to { bottom: 0; opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍞 Bakery Management System</h1>
+
+    <h2>All Products</h2>
+    <button onclick="loadProducts()">📦 Load Products</button>
+    <ul id="productList"></ul>
+
+    <h2>Place an Order</h2>
+    <input type="number" id="productIdInput" placeholder="Enter Product ID" />
+    <button onclick="placeOrder()">🛒 Order</button>
+    <p id="orderResult"></p>
+
+    <h2>Check Order Status</h2>
+    <input type="number" id="orderIdInput" placeholder="Enter Order ID" />
+    <button onclick="checkStatus()">📋 Check</button>
+    <button onclick="refreshLastStatus()">🔄 Refresh Last Order</button>
+    <label><input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()"> Auto-refresh every 10s</label>
+    <p id="orderStatus"></p>
+
+    <h2>🧾 Order History</h2>
+    <ul id="orderHistory"></ul>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    const apiUrl = 'http://localhost:5000';
+    let lastOrderId = null;
+    let orderHistory = [];
+    let autoRefreshInterval = null;
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = "show";
+      setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    function loadProducts() {
+      fetch(`${apiUrl}/products`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById('productList');
+          list.innerHTML = '';
+          data.forEach(p => {
+            const li = document.createElement('li');
+            li.textContent = `ID: ${p[0]} - ${p[1]} - ₹${p[2]} (Stock: ${p[3]})`;
+            list.appendChild(li);
+          });
+        });
+    }
+
+    function placeOrder() {
+      const id = document.getElementById('productIdInput').value;
+      if (!id) return showToast("Please enter a product ID!");
+
+      fetch(`${apiUrl}/order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: id })
+      })
+      .then(res => res.json())
+      .then(data => {
+        lastOrderId = data.order_id;
+        document.getElementById('orderIdInput').value = lastOrderId;
+        document.getElementById('orderResult').textContent =
+          `✅ Order placed! Your order ID is ${lastOrderId}`;
+        document.getElementById('orderStatus').textContent = 'Status: pending';
+
+        orderHistory.push(lastOrderId);
+        updateOrderHistory();
+
+        showToast("Order placed successfully!");
+      });
+    }
+
+    function checkStatus() {
+      const orderId = document.getElementById('orderIdInput').value;
+      if (!orderId) return showToast("Enter an order ID!");
+      fetch(`${apiUrl}/order/${orderId}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('orderStatus').textContent =
+            data.status ? `Status: ${data.status}` : `❌ ${data.error}`;
+          showToast(`Status: ${data.status || 'Error checking order'}`);
+        });
+    }
+
+    function refreshLastStatus() {
+      if (!lastOrderId) {
+        showToast("No order placed yet!");
+        return;
+      }
+      fetch(`${apiUrl}/order/${lastOrderId}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('orderStatus').textContent =
+            data.status ? `Status: ${data.status}` : `❌ ${data.error}`;
+          showToast(`Auto-refresh: ${data.status || 'Error'}`);
+        });
+    }
+
+    function updateOrderHistory() {
+      const list = document.getElementById('orderHistory');
+      list.innerHTML = '';
+      orderHistory.slice().reverse().forEach(id => {
+        const li = document.createElement('li');
+        li.textContent = `Order ID: ${id}`;
+        list.appendChild(li);
+      });
+    }
+
+    function toggleAutoRefresh() {
+      const checkbox = document.getElementById('autoRefresh');
+      if (checkbox.checked) {
+        autoRefreshInterval = setInterval(refreshLastStatus, 10000);
+        showToast("Auto-refresh enabled");
+      } else {
+        clearInterval(autoRefreshInterval);
+        showToast("Auto-refresh disabled");
+      }
+    }
+  </script>
+</body>
+</html>
