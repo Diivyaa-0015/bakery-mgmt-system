@@ -5,109 +5,129 @@
   <title>Bakery Shop</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #fef9f4;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff6ec;
+  color: #3d2c1e;
+  margin: 0;
+  padding: 0;
+}
 
-    .container {
-      max-width: 800px;
-      margin: auto;
-      padding: 30px;
-      background-color: #fff9f1;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-      margin-top: 40px;
-    }
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 40px;
+  background: #fff3e6;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
 
-    h1 {
-      text-align: center;
-      color: #d2691e;
-      margin-bottom: 30px;
-    }
+h1 {
+  text-align: center;
+  color: #bf5700;
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+}
 
-    h2 {
-      color: #8b4513;
-      margin-top: 30px;
-    }
+h2 {
+  color: #a0522d;
+  margin-top: 40px;
+  font-size: 1.5rem;
+  border-bottom: 2px dashed #e2c4a0;
+  padding-bottom: 8px;
+}
 
-    input {
-      padding: 8px;
-      border: 1px solid #d2b48c;
-      border-radius: 5px;
-      width: 200px;
-      margin-right: 10px;
-    }
+input {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #d2b48c;
+  border-radius: 8px;
+  width: 240px;
+  margin: 8px 8px 16px 0;
+  outline: none;
+}
 
-    button {
-      padding: 8px 16px;
-      background-color: #ff944d;
-      border: none;
-      color: white;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
+input:focus {
+  border-color: #ff944d;
+  box-shadow: 0 0 5px #ffdab9;
+}
 
-    button:hover {
-      background-color: #ff7733;
-    }
+button {
+  padding: 10px 18px;
+  background-color: #ff944d;
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
 
-    label {
-      font-size: 14px;
-      color: #555;
-    }
+button:hover {
+  background-color: #ff7733;
+  transform: translateY(-1px);
+}
 
-    ul {
-      list-style: none;
-      padding-left: 0;
-    }
+label {
+  font-size: 15px;
+  color: #5a4635;
+  display: block;
+  margin-top: 10px;
+}
 
-    li {
-      background-color: #fff;
-      border: 1px solid #eee;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 6px;
-    }
+ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
 
-    p {
-      font-size: 14px;
-    }
+li {
+  background-color: #fff;
+  border: 1px solid #f0d9c2;
+  padding: 12px;
+  margin: 6px 0;
+  border-radius: 8px;
+  font-size: 15px;
+}
 
-    #toast {
-      visibility: hidden;
-      min-width: 250px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 5px;
-      padding: 12px;
-      position: fixed;
-      z-index: 1;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 16px;
-    }
+p {
+  font-size: 15px;
+  color: #6b4f3b;
+  margin: 10px 0;
+}
 
-    #toast.show {
-      visibility: visible;
-      animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    }
+#toast {
+  visibility: hidden;
+  min-width: 280px;
+  background-color: #3d2c1e;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 14px;
+  position: fixed;
+  z-index: 1;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
 
-    @keyframes fadein {
-      from { bottom: 0; opacity: 0; }
-      to { bottom: 30px; opacity: 1; }
-    }
+#toast.show {
+  visibility: visible;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
 
-    @keyframes fadeout {
-      from { bottom: 30px; opacity: 1; }
-      to { bottom: 0; opacity: 0; }
-    }
+@keyframes fadein {
+  from { bottom: 0; opacity: 0; }
+  to { bottom: 30px; opacity: 1; }
+}
+
+@keyframes fadeout {
+  from { bottom: 30px; opacity: 1; }
+  to { bottom: 0; opacity: 0; }
+}
+
   </style>
 </head>
 <body>
@@ -127,7 +147,6 @@
     <input type="number" id="orderIdInput" placeholder="Enter Order ID" />
     <button onclick="checkStatus()">📋 Check</button>
     <button onclick="refreshLastStatus()">🔄 Refresh Last Order</button>
-    <label><input type="checkbox" id="autoRefresh" onchange="toggleAutoRefresh()"> Auto-refresh every 10s</label>
     <p id="orderStatus"></p>
 
     <h2>🧾 Order History</h2>
