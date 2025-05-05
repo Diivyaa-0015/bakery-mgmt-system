@@ -1,0 +1,56 @@
+ Design Decisions — Bakery Management System
+1. Microservices Architecture
+Why?
+To promote modularity, scalability, and separation of concerns.
+
+Benefit:
+Each service (frontend, backend, worker, database) can be developed, deployed, and scaled independently.
+
+2. Docker & Docker Compose
+Why?
+To simplify environment setup, ensure consistency across machines, and manage multiple services easily.
+
+Benefit:
+One command (docker-compose up) launches the entire system with all dependencies.
+
+3. PostgreSQL as Database
+Why?
+Reliable, open-source relational database with good support for structured data.
+
+Benefit:
+Ideal for storing bakery products and order records with relationships.
+
+4. RabbitMQ for Message Brokering
+Why?
+Needed for asynchronous processing and to decouple the API from the background worker.
+
+Benefit:
+Improves performance by offloading time-consuming order processing to a separate worker service.
+
+5. RESTful Backend API
+Why?
+A well-understood, standard architecture for web services.
+
+Benefit:
+Easily consumed by both frontend and external clients. Facilitates testing and extension.
+
+6. Worker Service for Background Jobs
+Why?
+To process orders asynchronously without blocking the main API.
+
+Benefit:
+Enhances responsiveness of the system and supports scalable order handling.
+
+7. Lightweight Frontend (HTML/CSS/JS)
+Why?
+Simple UI to demonstrate functionality without adding frontend framework complexity.
+
+Benefit:
+Faster loading and easier to containerize and deploy.
+
+8. Health Check Endpoints
+Why?
+To monitor the health of the backend and dependencies (like DB, RabbitMQ).
+
+Benefit:
+Ensures observability and easier debugging/maintenance.
